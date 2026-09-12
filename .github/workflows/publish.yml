@@ -23,5 +23,23 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
+      # tag 必须与 package.json 版本一致;该版本已在 npm 上(如手动首发的 1.0.0)则跳过,避免 CI 报「不能覆盖已发布版本」。
+      # 判断用「输出非空」而非退出码:老版本 npm 查不到版本时 exit 0 + 空输出。
+      - name: Check version
+        id: version
+        run: |
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "::error::tag $GITHUB_REF_NAME 与 package.json 版本 $VERSION 不一致"
+            exit 1
+          fi
+          if [ -n "$(npm view "$NAME@$VERSION" version 2>/dev/null)" ]; then
+            echo "::notice::$NAME@$VERSION 已在 npm 上,跳过发布"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - run: npm ci
+        if: steps.version.outputs.skip != 'true'
       - run: npm publish # access=public 已在 package.json 的 publishConfig;build 由 prepublishOnly 触发
+        if: steps.version.outputs.skip != 'true'
