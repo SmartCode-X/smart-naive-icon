@@ -97,7 +97,9 @@ async function loadTab() {
     return
   }
   if (cache[prefix]) {
+    // 须显式复位:上一个 Tab 加载中途切过来时,它的 finally 因 active 已变而不会复位 loading
     names.value = cache[prefix]
+    loading.value = false
     return
   }
   loading.value = true
