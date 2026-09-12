@@ -26,10 +26,12 @@ const isLocal = computed(() => prefix.value === LOCAL_PREFIX)
 const localRaw = computed(() => (isLocal.value ? localSvgRaw(name.value.slice(LOCAL_PREFIX.length + 1)) : undefined))
 
 // 内置集须等注册完再渲染,否则 <Icon> 会回落到外部 iconify CDN;非内置直接渲染(联网兜底)。
+// name 变化时作废上一轮未完成的加载:否则旧集先加载完会把 ready 置 true,新集未注册就渲染而命中 CDN。
+// 用回调第三参 onCleanup 而非 onWatcherCleanup(后者 Vue 3.5+,peer 范围是 ^3.3)。
 const iconifyReady = ref(false)
 watch(
   name,
-  () => {
+  (_name, _prev, onCleanup) => {
     if (!name.value || isLocal.value) return
     const p = prefix.value
     if (!isBundled(p) || isRegistered(p)) {
@@ -37,8 +39,12 @@ watch(
       return
     }
     iconifyReady.value = false
+    let stale = false
+    onCleanup(() => {
+      stale = true
+    })
     ensureCollection(p).then(() => {
-      iconifyReady.value = true
+      if (!stale) iconifyReady.value = true
     })
   },
   { immediate: true },
