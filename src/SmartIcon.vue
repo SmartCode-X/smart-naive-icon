@@ -55,18 +55,18 @@ const px = computed(() => (typeof props.size === 'number' ? `${props.size}px` : 
 
 <template>
   <!-- eslint-disable-next-line vue/no-v-html — 本地 SVG 为注入的可信资产 -->
-  <span v-if="isLocal" class="offline-icon" :style="{ width: px, height: px }" v-html="localRaw || ''" />
+  <span v-if="isLocal" class="smart-icon" :style="{ width: px, height: px }" v-html="localRaw || ''" />
   <Icon v-else-if="name && iconifyReady" :icon="name" :width="px" :height="px" />
-  <span v-else class="offline-icon" :style="{ width: px, height: px }" />
+  <span v-else class="smart-icon" :style="{ width: px, height: px }" />
 </template>
 
 <style scoped>
-.offline-icon {
+.smart-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
-.offline-icon :deep(svg) {
+.smart-icon :deep(svg) {
   width: 100%;
   height: 100%;
 }

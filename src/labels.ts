@@ -1,7 +1,7 @@
-import type { IconPickerLabels } from './types'
+import type { SmartIconPickerLabels } from './types'
 
-/** 默认英文文案。消费方可通过 IconPicker 的 `labels` prop 部分覆盖(如接自己的 i18n)。 */
-export const defaultLabels: IconPickerLabels = {
+/** 默认英文文案。消费方可通过 SmartIconPicker 的 `labels` prop 部分覆盖(如接自己的 i18n)。 */
+export const defaultLabels: SmartIconPickerLabels = {
   placeholder: 'Select icon',
   title: 'Select icon',
   search: 'Search icon name…',

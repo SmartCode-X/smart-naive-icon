@@ -1,5 +1,5 @@
-export { default as IconPicker } from './IconPicker.vue'
-export { default as OfflineIcon } from './OfflineIcon.vue'
+export { default as SmartIconPicker } from './SmartIconPicker.vue'
+export { default as SmartIcon } from './SmartIcon.vue'
 export {
   LOCAL_PREFIX,
   registerCollections,
@@ -14,7 +14,7 @@ export {
   localSvgRaw,
   lucideCollection,
   defaultCollections,
-  setupIconPicker,
+  setupSmartIcon,
 } from './icons'
 export { defaultLabels } from './labels'
-export type { IconCollection, IconSetMeta, IconPickerLabels, IconifyJSON, SetupOptions } from './types'
+export type { IconCollection, IconSetMeta, SmartIconPickerLabels, IconifyJSON, SetupOptions } from './types'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NCard, NConfigProvider, NSpace, NSwitch, darkTheme } from 'naive-ui'
-import { IconPicker, OfflineIcon } from '../src'
+import { SmartIconPicker, SmartIcon } from '../src'
 
 const a = ref('lucide:rocket')
 const b = ref('')
@@ -16,12 +16,12 @@ const dark = ref(false)
           <n-space align="center">Dark <n-switch v-model:value="dark" /></n-space>
 
           <div>
-            <IconPicker v-model="a" />
-            <p>value: <code>{{ a }}</code> → <OfflineIcon :icon="a" :size="24" /></p>
+            <SmartIconPicker v-model="a" />
+            <p>value: <code>{{ a }}</code> → <SmartIcon :icon="a" :size="24" /></p>
           </div>
 
           <div>
-            <IconPicker v-model="b" :labels="{ placeholder: 'No icon selected' }" />
+            <SmartIconPicker v-model="b" :labels="{ placeholder: 'No icon selected' }" />
             <p>value: <code>{{ b || '(empty)' }}</code></p>
           </div>
         </n-space>

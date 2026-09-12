@@ -1,10 +1,10 @@
 <script setup lang="ts">
 // 离线优先图标选择器(Vue3 + Naive UI)。值契约单串 `prefix:name` / `local:name`。
 // 解耦:文案走 labels prop(英文默认)、主题走 useThemeVars(跟随消费方 Naive 主题)、
-// 图标集/本地SVG 走注入(collections / localIcons 或 setupIconPicker)。
+// 图标集/本地SVG 走注入(collections / localIcons 或 setupSmartIcon)。
 import { computed, ref, watch } from 'vue'
 import { NButton, NEmpty, NInput, NModal, NScrollbar, NTab, NTabs, useThemeVars } from 'naive-ui'
-import OfflineIcon from './OfflineIcon.vue'
+import SmartIcon from './SmartIcon.vue'
 import {
   LOCAL_PREFIX,
   getCollections,
@@ -14,7 +14,7 @@ import {
   registerLocalIcons,
 } from './icons'
 import { defaultLabels } from './labels'
-import type { IconCollection, IconPickerLabels, IconSetMeta } from './types'
+import type { IconCollection, SmartIconPickerLabels, IconSetMeta } from './types'
 
 const model = defineModel<string>({ default: '' })
 const props = withDefaults(defineProps<{
@@ -23,13 +23,13 @@ const props = withDefaults(defineProps<{
   /** 本地 SVG 映射,`{名字:原始SVG}` 或 import.meta.glob 结果。 */
   localIcons?: Record<string, string>
   /** 文案覆盖(接自己的 i18n)。 */
-  labels?: Partial<IconPickerLabels>
+  labels?: Partial<SmartIconPickerLabels>
   clearable?: boolean
   /** 搜索框图标(默认 lucide:search)。 */
   searchIcon?: string
   /** 清除图标(默认 lucide:x)。 */
   clearIcon?: string
-  /** OfflineIcon 空值兜底。 */
+  /** SmartIcon 空值兜底。 */
   fallbackIcon?: string
   /** 单页可见上限,超出提示继续输入(默认 300)。 */
   cap?: number
@@ -45,20 +45,20 @@ const props = withDefaults(defineProps<{
 if (props.collections) registerCollections(props.collections)
 if (props.localIcons) registerLocalIcons(props.localIcons)
 
-const L = computed<IconPickerLabels>(() => ({ ...defaultLabels, ...props.labels }))
+const L = computed<SmartIconPickerLabels>(() => ({ ...defaultLabels, ...props.labels }))
 
 // 主题:映射 Naive 主题色 → 组件局部 CSS 变量(跟随明/暗/主色)。绑定在触发器与弹窗体两处(弹窗 teleport 到 body)。
 const theme = useThemeVars()
 const themeStyle = computed(() => ({
-  '--icon-picker-border': theme.value.borderColor,
-  '--icon-picker-bg': theme.value.cardColor,
-  '--icon-picker-text-1': theme.value.textColor1,
-  '--icon-picker-text-2': theme.value.textColor2,
-  '--icon-picker-text-3': theme.value.textColor3,
-  '--icon-picker-hover': theme.value.hoverColor,
-  '--icon-picker-primary': theme.value.primaryColor,
-  '--icon-picker-radius': theme.value.borderRadius,
-  '--icon-picker-fs-sm': theme.value.fontSizeSmall,
+  '--smart-icon-picker-border': theme.value.borderColor,
+  '--smart-icon-picker-bg': theme.value.cardColor,
+  '--smart-icon-picker-text-1': theme.value.textColor1,
+  '--smart-icon-picker-text-2': theme.value.textColor2,
+  '--smart-icon-picker-text-3': theme.value.textColor3,
+  '--smart-icon-picker-hover': theme.value.hoverColor,
+  '--smart-icon-picker-primary': theme.value.primaryColor,
+  '--smart-icon-picker-radius': theme.value.borderRadius,
+  '--smart-icon-picker-fs-sm': theme.value.fontSizeSmall,
 }))
 
 const metas = computed<IconSetMeta[]>(() => props.collections ?? getCollections())
@@ -142,12 +142,12 @@ function clear() {
 </script>
 
 <template>
-  <div class="icon-picker">
-    <div class="icon-picker-trigger" :class="{ empty: !model }" :style="themeStyle" @click="show = true">
-      <OfflineIcon v-if="model" :icon="model" :size="18" :fallback="fallbackIcon" />
-      <span class="icon-picker-val">{{ model || placeholderText }}</span>
-      <span v-if="clearable && model" class="icon-picker-clear" @click.stop="clear">
-        <OfflineIcon :icon="clearIcon" :size="13" />
+  <div class="smart-icon-picker">
+    <div class="smart-icon-picker-trigger" :class="{ empty: !model }" :style="themeStyle" @click="show = true">
+      <SmartIcon v-if="model" :icon="model" :size="18" :fallback="fallbackIcon" />
+      <span class="smart-icon-picker-val">{{ model || placeholderText }}</span>
+      <span v-if="clearable && model" class="smart-icon-picker-clear" @click.stop="clear">
+        <SmartIcon :icon="clearIcon" :size="13" />
       </span>
     </div>
 
@@ -155,14 +155,14 @@ function clear() {
       v-model:show="show"
       preset="card"
       :title="L.title"
-      class="icon-picker-modal"
+      class="smart-icon-picker-modal"
       :style="{ width: '600px', maxWidth: '94vw' }"
       :bordered="false"
     >
-      <div class="icon-picker-body" :style="themeStyle">
-        <div class="icon-picker-search">
+      <div class="smart-icon-picker-body" :style="themeStyle">
+        <div class="smart-icon-picker-search">
           <n-input v-model:value="keyword" :placeholder="L.search" clearable>
-            <template #prefix><OfflineIcon :icon="searchIcon" :size="16" /></template>
+            <template #prefix><SmartIcon :icon="searchIcon" :size="16" /></template>
           </n-input>
         </div>
 
@@ -178,35 +178,35 @@ function clear() {
              常规/高屏封顶 340px(约 5 行,防弹窗随大显示器变「非常高」);矮窗(<~680px)收到 50vh 防溢出。 -->
         <n-scrollbar :style="{ maxHeight: 'min(340px, 50vh)' }">
           <!-- 在线自由输入 -->
-          <div v-if="active === ONLINE_TAB" class="icon-picker-online">
+          <div v-if="active === ONLINE_TAB" class="smart-icon-picker-online">
             <n-input v-model:value="onlineInput" :placeholder="L.onlinePlaceholder" @keyup.enter="pickOnline">
               <template #suffix>
-                <OfflineIcon v-if="onlineInput.trim()" :icon="onlineInput.trim()" :size="20" />
+                <SmartIcon v-if="onlineInput.trim()" :icon="onlineInput.trim()" :size="20" />
               </template>
             </n-input>
             <n-button type="primary" :disabled="!onlineInput.trim()" @click="pickOnline">{{ L.use }}</n-button>
-            <p v-if="!isOnline" class="icon-picker-hint">{{ L.offlineHint }}</p>
+            <p v-if="!isOnline" class="smart-icon-picker-hint">{{ L.offlineHint }}</p>
           </div>
 
           <!-- 图标网格 -->
-          <div v-else-if="loading" class="icon-picker-state">{{ L.loading }}</div>
-          <n-empty v-else-if="!visibleNames.length" class="icon-picker-state" :description="L.empty" />
+          <div v-else-if="loading" class="smart-icon-picker-state">{{ L.loading }}</div>
+          <n-empty v-else-if="!visibleNames.length" class="smart-icon-picker-state" :description="L.empty" />
           <template v-else>
-            <div class="icon-picker-grid">
+            <div class="smart-icon-picker-grid">
               <button
                 v-for="name in visibleNames"
                 :key="name"
                 type="button"
-                class="icon-picker-cell"
+                class="smart-icon-picker-cell"
                 :class="{ sel: model === iconId(name) }"
                 :title="iconId(name)"
                 @click="pick(name)"
               >
-                <OfflineIcon :icon="iconId(name)" :size="22" />
-                <span class="icon-picker-name">{{ name }}</span>
+                <SmartIcon :icon="iconId(name)" :size="22" />
+                <span class="smart-icon-picker-name">{{ name }}</span>
               </button>
             </div>
-            <p v-if="overflow > 0" class="icon-picker-more">{{ moreText }}</p>
+            <p v-if="overflow > 0" class="smart-icon-picker-more">{{ moreText }}</p>
           </template>
         </n-scrollbar>
       </div>
@@ -215,101 +215,101 @@ function clear() {
 </template>
 
 <style scoped>
-.icon-picker-trigger {
+.smart-icon-picker-trigger {
   display: flex;
   align-items: center;
   gap: 8px;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--icon-picker-border);
-  border-radius: var(--icon-picker-radius);
-  background: var(--icon-picker-bg);
-  color: var(--icon-picker-text-1);
+  border: 1px solid var(--smart-icon-picker-border);
+  border-radius: var(--smart-icon-picker-radius);
+  background: var(--smart-icon-picker-bg);
+  color: var(--smart-icon-picker-text-1);
   cursor: pointer;
   transition: border-color 0.2s;
 }
-.icon-picker-trigger:hover {
-  border-color: var(--icon-picker-primary);
+.smart-icon-picker-trigger:hover {
+  border-color: var(--smart-icon-picker-primary);
 }
-.icon-picker-trigger.empty .icon-picker-val {
-  color: var(--icon-picker-text-3);
+.smart-icon-picker-trigger.empty .smart-icon-picker-val {
+  color: var(--smart-icon-picker-text-3);
 }
-.icon-picker-val {
+.smart-icon-picker-val {
   flex: 1;
   min-width: 0;
-  font-size: var(--icon-picker-fs-sm);
+  font-size: var(--smart-icon-picker-fs-sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.icon-picker-clear {
+.smart-icon-picker-clear {
   display: inline-flex;
-  color: var(--icon-picker-text-3);
+  color: var(--smart-icon-picker-text-3);
 }
-.icon-picker-clear:hover {
-  color: var(--icon-picker-text-1);
+.smart-icon-picker-clear:hover {
+  color: var(--smart-icon-picker-text-1);
 }
 
-.icon-picker-search {
+.smart-icon-picker-search {
   margin-bottom: 8px;
 }
-.icon-picker-state {
+.smart-icon-picker-state {
   padding: 40px 0;
   text-align: center;
-  color: var(--icon-picker-text-3);
+  color: var(--smart-icon-picker-text-3);
 }
-.icon-picker-grid {
+.smart-icon-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
   gap: 8px;
   padding: 8px 4px;
 }
-.icon-picker-cell {
+.smart-icon-picker-cell {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 10px 4px;
   border: 1px solid transparent;
-  border-radius: var(--icon-picker-radius);
+  border-radius: var(--smart-icon-picker-radius);
   background: transparent;
-  color: var(--icon-picker-text-2);
+  color: var(--smart-icon-picker-text-2);
   cursor: pointer;
   transition: all 0.15s;
 }
-.icon-picker-cell:hover {
-  background: var(--icon-picker-hover);
-  color: var(--icon-picker-text-1);
+.smart-icon-picker-cell:hover {
+  background: var(--smart-icon-picker-hover);
+  color: var(--smart-icon-picker-text-1);
 }
-.icon-picker-cell.sel {
-  background: color-mix(in srgb, var(--icon-picker-primary) 12%, transparent);
-  border-color: var(--icon-picker-primary);
-  color: var(--icon-picker-primary);
+.smart-icon-picker-cell.sel {
+  background: color-mix(in srgb, var(--smart-icon-picker-primary) 12%, transparent);
+  border-color: var(--smart-icon-picker-primary);
+  color: var(--smart-icon-picker-primary);
 }
-.icon-picker-name {
+.smart-icon-picker-name {
   max-width: 100%;
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.icon-picker-more {
+.smart-icon-picker-more {
   padding: 4px 0 8px;
   text-align: center;
-  font-size: var(--icon-picker-fs-sm);
-  color: var(--icon-picker-text-3);
+  font-size: var(--smart-icon-picker-fs-sm);
+  color: var(--smart-icon-picker-text-3);
 }
-.icon-picker-online {
+.smart-icon-picker-online {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   padding: 16px 4px;
 }
-.icon-picker-hint {
+.smart-icon-picker-hint {
   width: 100%;
   margin: 0;
-  font-size: var(--icon-picker-fs-sm);
-  color: var(--icon-picker-text-3);
+  font-size: var(--smart-icon-picker-fs-sm);
+  color: var(--smart-icon-picker-text-3);
 }
 </style>

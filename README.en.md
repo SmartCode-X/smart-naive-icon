@@ -2,7 +2,7 @@
 
 # smart-naive-icon
 
-An offline icon picker for **Vue 3 + Naive UI**<br>
+An offline icon renderer and picker for **Vue 3 + Naive UI**<br>
 Browse multiple icon sets by tab, zero network requests, supports local SVGs — the selected value is just a string
 
 [![npm](https://img.shields.io/npm/v/smart-naive-icon?color=18a058)](https://www.npmjs.com/package/smart-naive-icon)
@@ -34,7 +34,7 @@ Browse multiple icon sets by tab, zero network requests, supports local SVGs —
 - **Follows the Naive theme**: light/dark mode, primary color, and border radius automatically follow `<n-config-provider>` — no CSS required
 - **Local SVGs**: register your project's own SVGs with a single `import.meta.glob` call and pick them via `local:filename`
 - **Online fallback**: for icons that aren't bundled, type an Iconify name (e.g. `mdi:home`) and use it while online
-- **The value is just a string**: `v-model` holds a plain string like `lucide:rocket` that you can store directly in your database and render anywhere with `<OfflineIcon>`
+- **The value is just a string**: `v-model` holds a plain string like `lucide:rocket` that you can store directly in your database and render anywhere with `<SmartIcon>`
 - **Lightweight**: the component itself is under 5 KB gzipped, ships as ESM with built-in TypeScript types, and injects its own styles
 
 <table>
@@ -63,22 +63,22 @@ Your project needs `vue >= 3.3`, `naive-ui >= 2.34`, and `@iconify/vue` (4.x or 
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconPicker, OfflineIcon } from 'smart-naive-icon'
+import { SmartIconPicker, SmartIcon } from 'smart-naive-icon'
 
 const icon = ref('lucide:rocket')
 </script>
 
 <template>
   <!-- 1. Pick: click to open the picker; the selection is written back to v-model -->
-  <IconPicker v-model="icon" />
+  <SmartIconPicker v-model="icon" />
 
   <!-- 2. Render: display the saved value anywhere — menus, tables, etc. -->
-  <OfflineIcon :icon="icon" :size="18" />
+  <SmartIcon :icon="icon" :size="18" />
 </template>
 ```
 
 <p align="center">
-  <img alt="IconPicker trigger" src="https://raw.githubusercontent.com/SmartCode-X/smart-naive-icon/main/assets/trigger.png" width="560">
+  <img alt="SmartIconPicker trigger" src="https://raw.githubusercontent.com/SmartCode-X/smart-naive-icon/main/assets/trigger.png" width="560">
 </p>
 
 The `v-model` value comes in only two formats:
@@ -104,9 +104,9 @@ npm i @iconify-json/ant-design @iconify-json/ep @iconify-json/ph
 
 ```ts
 // main.ts
-import { setupIconPicker, lucideCollection, type IconifyJSON } from 'smart-naive-icon'
+import { setupSmartIcon, lucideCollection, type IconifyJSON } from 'smart-naive-icon'
 
-setupIconPicker({
+setupSmartIcon({
   collections: [
     lucideCollection, // built in, no install needed
     { prefix: 'ant-design', name: 'Ant Design',   loader: () => import('@iconify-json/ant-design/icons.json').then((m) => m.default as IconifyJSON) },
@@ -126,9 +126,9 @@ Once registered, your project's SVGs show up under the "Local SVG" tab, with the
 
 ```ts
 // main.ts (Vite)
-import { setupIconPicker } from 'smart-naive-icon'
+import { setupSmartIcon } from 'smart-naive-icon'
 
-setupIconPicker({
+setupSmartIcon({
   localIcons: import.meta.glob<string>('/src/assets/svg/*.svg', { query: '?raw', import: 'default', eager: true }),
 })
 // src/assets/svg/star.svg → local:star
@@ -140,29 +140,29 @@ setupIconPicker({
 
 ### Render in menus and tables
 
-Hand the selected string to `<OfflineIcon>` to render it, pairing naturally with Naive's `render` functions:
+Hand the selected string to `<SmartIcon>` to render it, pairing naturally with Naive's `render` functions:
 
 ```ts
 import { h } from 'vue'
 import type { DataTableColumns, MenuOption } from 'naive-ui'
-import { OfflineIcon } from 'smart-naive-icon'
+import { SmartIcon } from 'smart-naive-icon'
 
 interface MenuItem {
   path: string
   title: string
-  icon: string // the value picked with IconPicker and stored, e.g. 'lucide:house'
+  icon: string // the value picked with SmartIconPicker and stored, e.g. 'lucide:house'
 }
 
 // Menu (menus is your menu data)
 const menuOptions: MenuOption[] = menus.map((m) => ({
   key: m.path,
   label: m.title,
-  icon: () => h(OfflineIcon, { icon: m.icon }),
+  icon: () => h(SmartIcon, { icon: m.icon }),
 }))
 
 // Table column
 const columns: DataTableColumns<MenuItem> = [
-  { key: 'icon', title: 'Icon', render: (row) => h(OfflineIcon, { icon: row.icon, size: 18 }) },
+  { key: 'icon', title: 'Icon', render: (row) => h(SmartIcon, { icon: row.icon, size: 18 }) },
 ]
 ```
 
@@ -173,10 +173,10 @@ The component has no dependency on any i18n library — all labels come from the
 For example, a Simplified Chinese label pack:
 
 ```ts
-// icon-picker-zh.ts
-import type { IconPickerLabels } from 'smart-naive-icon'
+// smart-icon-picker-zh.ts
+import type { SmartIconPickerLabels } from 'smart-naive-icon'
 
-export const zhLabels: IconPickerLabels = {
+export const zhLabels: SmartIconPickerLabels = {
   placeholder: '选择图标',
   title: '选择图标',
   search: '搜索图标名称…',
@@ -192,7 +192,7 @@ export const zhLabels: IconPickerLabels = {
 ```
 
 ```vue
-<IconPicker v-model="icon" :labels="zhLabels" />
+<SmartIconPicker v-model="icon" :labels="zhLabels" />
 ```
 
 When using vue-i18n, wrap the result of `t()` in a `computed` so it updates automatically when the locale changes:
@@ -200,14 +200,14 @@ When using vue-i18n, wrap the result of `t()` in a `computed` so it updates auto
 ```ts
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { defaultLabels, type IconPickerLabels } from 'smart-naive-icon'
+import { defaultLabels, type SmartIconPickerLabels } from 'smart-naive-icon'
 
 const { t } = useI18n()
 
 // Organize your locale messages under iconPicker.<key>; { n: '{n}' } keeps the placeholder in `more` literal, letting the component fill it in
 const labels = computed(() => {
-  const keys = Object.keys(defaultLabels) as (keyof IconPickerLabels)[]
-  return Object.fromEntries(keys.map((k) => [k, t(`iconPicker.${k}`, { n: '{n}' })])) as IconPickerLabels
+  const keys = Object.keys(defaultLabels) as (keyof SmartIconPickerLabels)[]
+  return Object.fromEntries(keys.map((k) => [k, t(`iconPicker.${k}`, { n: '{n}' })])) as SmartIconPickerLabels
 })
 ```
 
@@ -222,7 +222,7 @@ const labels = computed(() => {
 
 ## API
 
-### setupIconPicker
+### setupSmartIcon
 
 Call once at your app's entry point; every option is optional. If you never call it, only the built-in Lucide set is available.
 
@@ -234,21 +234,21 @@ Call once at your app's entry point; every option is optional. If you never call
 
 `IconCollection` has the shape `{ prefix: string; name: string; loader: () => Promise<IconifyJSON> }`; `name` is the tab's title.
 
-### IconPicker Props
+### SmartIconPicker Props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `v-model` | `string` | `''` | The selected icon, `prefix:name` or `local:name` |
 | `collections` | `IconCollection[]` | the globally registered icon sets | Icon sets shown by this instance; passing it also overrides the global registration |
 | `local-icons` | `Record<string, string>` | — | Local SVGs; passing it also overrides the global registration |
-| `labels` | `Partial<IconPickerLabels>` | English | Override some or all labels; see [Label keys](#label-keys) |
+| `labels` | `Partial<SmartIconPickerLabels>` | English | Override some or all labels; see [Label keys](#label-keys) |
 | `clearable` | `boolean` | `true` | Whether to show the clear button |
 | `cap` | `number` | `300` | Maximum number of icons rendered per page |
 | `search-icon` | `string` | `'lucide:search'` | Search box icon |
 | `clear-icon` | `string` | `'lucide:x'` | Clear button icon |
-| `fallback-icon` | `string` | `''` | The `fallback` passed to the `<OfflineIcon>` inside the trigger |
+| `fallback-icon` | `string` | `''` | The `fallback` passed to the `<SmartIcon>` inside the trigger |
 
-### OfflineIcon Props
+### SmartIcon Props
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -274,12 +274,12 @@ Call once at your app's entry point; every option is optional. If you never call
 
 ### Other exports
 
-- `registerCollections(list)`: overwrite-register icon sets; `setupIconPicker` calls this internally
+- `registerCollections(list)`: overwrite-register icon sets; `setupSmartIcon` calls this internally
 - `registerLocalIcons(map)`: overwrite-register local SVGs
 - `preloadIcons(prefix?)`: preload an icon set, defaulting to the first one
 - `lucideCollection`, `defaultCollections`, `defaultLabels`, `LOCAL_PREFIX` (value `'local'`)
 - `getCollections`, `getLocalIconNames`, `localSvgRaw`, `ensureCollection`, `loadIconNames`, `isBundled`, `isRegistered`
-- Types: `IconCollection`, `IconSetMeta`, `IconPickerLabels`, `IconifyJSON`, `SetupOptions`
+- Types: `IconCollection`, `IconSetMeta`, `SmartIconPickerLabels`, `IconifyJSON`, `SetupOptions`
 
 ## Development
 

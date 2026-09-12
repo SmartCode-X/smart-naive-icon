@@ -2,7 +2,7 @@
 
 # smart-naive-icon
 
-基于 **Vue 3 + Naive UI** 的离线图标选择器<br>
+基于 **Vue 3 + Naive UI** 的离线图标渲染器与选择器<br>
 多个图标库分 Tab 浏览、零网络请求、支持本地 SVG，选中的值就是一个字符串
 
 [![npm](https://img.shields.io/npm/v/smart-naive-icon?color=18a058)](https://www.npmjs.com/package/smart-naive-icon)
@@ -34,7 +34,7 @@
 - **跟随 Naive 主题**：亮色 / 暗色、主色、圆角自动跟随 `<n-config-provider>`，不用写一行 CSS
 - **本地 SVG**：一行 `import.meta.glob` 注册项目里的 SVG，以 `local:文件名` 选用
 - **在线兜底**：没有打包的图标，输入 Iconify 名称（如 `mdi:home`）也能在联网时使用
-- **值就是字符串**：`v-model` 是 `lucide:rocket` 这样的字符串，直接存库，任何地方用 `<OfflineIcon>` 渲染
+- **值就是字符串**：`v-model` 是 `lucide:rocket` 这样的字符串，直接存库，任何地方用 `<SmartIcon>` 渲染
 - **轻量**：组件本体 gzip 后不到 5 KB，ESM，自带 TypeScript 类型，样式自动注入
 
 <table>
@@ -63,22 +63,22 @@ npm i smart-naive-icon
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconPicker, OfflineIcon } from 'smart-naive-icon'
+import { SmartIconPicker, SmartIcon } from 'smart-naive-icon'
 
 const icon = ref('lucide:rocket')
 </script>
 
 <template>
   <!-- ① 选择：点击弹出选择框，选中后写回 v-model -->
-  <IconPicker v-model="icon" />
+  <SmartIconPicker v-model="icon" />
 
   <!-- ② 渲染：在菜单、表格等任意位置显示保存的值 -->
-  <OfflineIcon :icon="icon" :size="18" />
+  <SmartIcon :icon="icon" :size="18" />
 </template>
 ```
 
 <p align="center">
-  <img alt="IconPicker 选择器" src="https://raw.githubusercontent.com/SmartCode-X/smart-naive-icon/main/assets/trigger.png" width="560">
+  <img alt="SmartIconPicker 选择器" src="https://raw.githubusercontent.com/SmartCode-X/smart-naive-icon/main/assets/trigger.png" width="560">
 </p>
 
 `v-model` 的值只有两种格式：
@@ -104,9 +104,9 @@ npm i @iconify-json/ant-design @iconify-json/ep @iconify-json/ph
 
 ```ts
 // main.ts
-import { setupIconPicker, lucideCollection, type IconifyJSON } from 'smart-naive-icon'
+import { setupSmartIcon, lucideCollection, type IconifyJSON } from 'smart-naive-icon'
 
-setupIconPicker({
+setupSmartIcon({
   collections: [
     lucideCollection, // 内置，无需安装
     { prefix: 'ant-design', name: 'Ant Design',   loader: () => import('@iconify-json/ant-design/icons.json').then((m) => m.default as IconifyJSON) },
@@ -126,9 +126,9 @@ setupIconPicker({
 
 ```ts
 // main.ts（Vite）
-import { setupIconPicker } from 'smart-naive-icon'
+import { setupSmartIcon } from 'smart-naive-icon'
 
-setupIconPicker({
+setupSmartIcon({
   localIcons: import.meta.glob<string>('/src/assets/svg/*.svg', { query: '?raw', import: 'default', eager: true }),
 })
 // src/assets/svg/star.svg → local:star
@@ -140,29 +140,29 @@ setupIconPicker({
 
 ### 在菜单和表格中渲染
 
-选出的字符串交给 `<OfflineIcon>` 就能渲染，配合 Naive 的 `render` 函数使用：
+选出的字符串交给 `<SmartIcon>` 就能渲染，配合 Naive 的 `render` 函数使用：
 
 ```ts
 import { h } from 'vue'
 import type { DataTableColumns, MenuOption } from 'naive-ui'
-import { OfflineIcon } from 'smart-naive-icon'
+import { SmartIcon } from 'smart-naive-icon'
 
 interface MenuItem {
   path: string
   title: string
-  icon: string // 用 IconPicker 选出并存库的值，如 'lucide:house'
+  icon: string // 用 SmartIconPicker 选出并存库的值，如 'lucide:house'
 }
 
 // 菜单（menus 为你的菜单数据）
 const menuOptions: MenuOption[] = menus.map((m) => ({
   key: m.path,
   label: m.title,
-  icon: () => h(OfflineIcon, { icon: m.icon }),
+  icon: () => h(SmartIcon, { icon: m.icon }),
 }))
 
 // 表格列
 const columns: DataTableColumns<MenuItem> = [
-  { key: 'icon', title: '图标', render: (row) => h(OfflineIcon, { icon: row.icon, size: 18 }) },
+  { key: 'icon', title: '图标', render: (row) => h(SmartIcon, { icon: row.icon, size: 18 }) },
 ]
 ```
 
@@ -173,10 +173,10 @@ const columns: DataTableColumns<MenuItem> = [
 中文项目可以直接复制这份文案：
 
 ```ts
-// icon-picker-zh.ts
-import type { IconPickerLabels } from 'smart-naive-icon'
+// smart-icon-picker-zh.ts
+import type { SmartIconPickerLabels } from 'smart-naive-icon'
 
-export const zhLabels: IconPickerLabels = {
+export const zhLabels: SmartIconPickerLabels = {
   placeholder: '选择图标',
   title: '选择图标',
   search: '搜索图标名称…',
@@ -192,7 +192,7 @@ export const zhLabels: IconPickerLabels = {
 ```
 
 ```vue
-<IconPicker v-model="icon" :labels="zhLabels" />
+<SmartIconPicker v-model="icon" :labels="zhLabels" />
 ```
 
 使用 vue-i18n 时，把 `t()` 的结果用 `computed` 包起来传入，切换语言后自动更新：
@@ -200,14 +200,14 @@ export const zhLabels: IconPickerLabels = {
 ```ts
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { defaultLabels, type IconPickerLabels } from 'smart-naive-icon'
+import { defaultLabels, type SmartIconPickerLabels } from 'smart-naive-icon'
 
 const { t } = useI18n()
 
 // 语言包中按 iconPicker.<键> 组织文案；{ n: '{n}' } 让 more 里的占位原样保留，交给组件填充
 const labels = computed(() => {
-  const keys = Object.keys(defaultLabels) as (keyof IconPickerLabels)[]
-  return Object.fromEntries(keys.map((k) => [k, t(`iconPicker.${k}`, { n: '{n}' })])) as IconPickerLabels
+  const keys = Object.keys(defaultLabels) as (keyof SmartIconPickerLabels)[]
+  return Object.fromEntries(keys.map((k) => [k, t(`iconPicker.${k}`, { n: '{n}' })])) as SmartIconPickerLabels
 })
 ```
 
@@ -222,7 +222,7 @@ const labels = computed(() => {
 
 ## API
 
-### setupIconPicker
+### setupSmartIcon
 
 在应用入口调用一次，所有选项均可省略；不调用时只有内置的 Lucide。
 
@@ -234,21 +234,21 @@ const labels = computed(() => {
 
 `IconCollection` 的结构为 `{ prefix: string; name: string; loader: () => Promise<IconifyJSON> }`，`name` 即 Tab 标题。
 
-### IconPicker Props
+### SmartIconPicker Props
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
 | `v-model` | `string` | `''` | 选中的图标，`prefix:name` 或 `local:name` |
 | `collections` | `IconCollection[]` | 全局注册的图标库 | 本组件显示的图标库，传入后同时覆盖全局注册 |
 | `local-icons` | `Record<string, string>` | — | 本地 SVG，传入后同时覆盖全局注册 |
-| `labels` | `Partial<IconPickerLabels>` | 英文 | 覆盖部分或全部文案，见 [文案键](#文案键) |
+| `labels` | `Partial<SmartIconPickerLabels>` | 英文 | 覆盖部分或全部文案，见 [文案键](#文案键) |
 | `clearable` | `boolean` | `true` | 是否显示清除按钮 |
 | `cap` | `number` | `300` | 单页最多渲染的图标数 |
 | `search-icon` | `string` | `'lucide:search'` | 搜索框图标 |
 | `clear-icon` | `string` | `'lucide:x'` | 清除按钮图标 |
-| `fallback-icon` | `string` | `''` | 传给触发器内 `<OfflineIcon>` 的 `fallback` |
+| `fallback-icon` | `string` | `''` | 传给触发器内 `<SmartIcon>` 的 `fallback` |
 
-### OfflineIcon Props
+### SmartIcon Props
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
@@ -274,12 +274,12 @@ const labels = computed(() => {
 
 ### 其它导出
 
-- `registerCollections(list)`：覆盖式注册图标库，`setupIconPicker` 内部即调用它
+- `registerCollections(list)`：覆盖式注册图标库，`setupSmartIcon` 内部即调用它
 - `registerLocalIcons(map)`：覆盖式注册本地 SVG
 - `preloadIcons(prefix?)`：预加载某个图标库，默认第一个
 - `lucideCollection`、`defaultCollections`、`defaultLabels`、`LOCAL_PREFIX`（值为 `'local'`）
 - `getCollections`、`getLocalIconNames`、`localSvgRaw`、`ensureCollection`、`loadIconNames`、`isBundled`、`isRegistered`
-- 类型：`IconCollection`、`IconSetMeta`、`IconPickerLabels`、`IconifyJSON`、`SetupOptions`
+- 类型：`IconCollection`、`IconSetMeta`、`SmartIconPickerLabels`、`IconifyJSON`、`SetupOptions`
 
 ## 本地开发
 

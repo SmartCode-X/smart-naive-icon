@@ -12,7 +12,7 @@ const loaderByPrefix = new Map<string, () => Promise<IconifyJSON>>()
 const dataCache: Record<string, IconifyJSON> = {}
 const registered = new Set<string>()
 
-/** 设置可用图标集(覆盖式)。IconPicker 传了 collections prop 时也会调用它。 */
+/** 设置可用图标集(覆盖式)。SmartIconPicker 传了 collections prop 时也会调用它。 */
 export function registerCollections(list: IconCollection[]): void {
   collections = list.slice()
   loaderByPrefix.clear()
@@ -49,7 +49,7 @@ export async function ensureCollection(prefix: string): Promise<IconifyJSON | nu
   return data
 }
 
-/** 懒加载并返回排序后的图标名(供 IconPicker 列名)。 */
+/** 懒加载并返回排序后的图标名(供 SmartIconPicker 列名)。 */
 export async function loadIconNames(prefix: string): Promise<string[]> {
   const data = await ensureCollection(prefix)
   return data ? Object.keys(data.icons ?? {}).sort() : []
@@ -97,11 +97,11 @@ export const lucideCollection: IconCollection = {
 export const defaultCollections: IconCollection[] = [lucideCollection]
 
 /** 一次性配置(全部可选)。消费方在 app 入口调一次即可;不调也能用默认 Lucide。 */
-export function setupIconPicker(opts: SetupOptions = {}): void {
+export function setupSmartIcon(opts: SetupOptions = {}): void {
   registerCollections(opts.collections ?? defaultCollections)
   if (opts.localIcons) registerLocalIcons(opts.localIcons)
   void preloadIcons(opts.preloadPrefix)
 }
 
-// 模块加载即注册默认集,保证「未调 setupIconPicker 也能用」的零配置体验。
+// 模块加载即注册默认集,保证「未调 setupSmartIcon 也能用」的零配置体验。
 registerCollections(defaultCollections)

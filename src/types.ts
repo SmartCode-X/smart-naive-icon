@@ -18,7 +18,7 @@ export interface IconCollection extends IconSetMeta {
 }
 
 /** 选择器全部文案(可通过 labels prop 部分覆盖)。 */
-export interface IconPickerLabels {
+export interface SmartIconPickerLabels {
   /** 触发器占位。 */
   placeholder: string
   /** 弹窗标题。 */
@@ -43,7 +43,7 @@ export interface IconPickerLabels {
   more: string
 }
 
-/** setupIconPicker 一次性配置。 */
+/** setupSmartIcon 一次性配置。 */
 export interface SetupOptions {
   /** 内置离线图标集;省略则用 defaultCollections(仅 Lucide)。 */
   collections?: IconCollection[]
